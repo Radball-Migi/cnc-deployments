@@ -1,6 +1,22 @@
-apiVersion: kustomize.config.k8s.io/v1beta1
-kind: Kustomization
-
-resources:
-  - ./deployment.yaml
-  - ./service.yaml
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: migis-studentverwaltung
+  namespace: argocd  # Das muss argocd sein
+spec:
+  destination:
+    namespace: miguel-schneider # (fast) frei wählbar
+    server: https://kubernetes.default.svc  # Das muss https://kubernetes.default.svc sein
+  project: student-projects   # bei uns entweder cluster-infrastructure oder student-projects
+  sources:
+    - path: argocd/studentverwaltung  # Pfad im Git Repository zu eurer Kustomization
+      repoURL: https://github.com/Radball-Migi/cnc-deployments.git  # URL zu eurem Git Repository
+      targetRevision: main  # Der gewünschte Branchname 
+      kustomize: {}
+  syncPolicy:
+    automated:
+      prune: false  # sollen resourcen automatisch gelöscht werden, wenn die Konfiguration im Git sie nicht mehr beinhaltet?
+      selfHeal: false  # sollen fehlende Resourcen jederzeit automatisch wieder erstellt werden? (Kann Nebeneffekte haben)
+      enabled: true  # Soll bei einer Änderung im Git Repository automatisch einen Sync 
+    syncOptions:
+      - CreateNamespace=true
